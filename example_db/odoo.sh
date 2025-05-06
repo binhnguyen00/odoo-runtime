@@ -60,37 +60,15 @@ function debug() {
     --dev=all
 }
 
-function active_venv() {
-  find_python() {
-    for py in python3.12 python3.11 python3.10 python3.9 python3.8 python3.7 python3 python; do
-      if command -v "$py" >/dev/null 2>&1; then
-        echo "$py"
-        return 0
-      fi
-    done
-    echo "NO PYTHON INTERPRETER FOUND" >&2
-    echo "AVAILABLE PYTHON VERSIONS: [$(command -v python*)]"
-    return 1
-  }
-  PYTHON_CMD=$(find_python) || return 1
-
-  activate() {
-    if [[ "$OSTYPE" == "msys" || "$OSTYPE" == "cygwin" ]]; then
-      source "$ODOO_VENV/Scripts/activate"
-    else
-      source "$ODOO_VENV/bin/activate"
-    fi
-  }
-
+function create_venv() {
   if [ -d "$ODOO_VENV" ]; then
-    activate
+    echo "VIRTUAL ENVIRONMENT ALREADY EXISTS"
   else
     echo "NO VIRTUAL ENVIRONMENT FOUND. CREATING ONE..."
     "$PYTHON_CMD" -m venv "$ODOO_VENV" || {
       echo "FAILED TO CREATE VIRTUAL ENVIRONMENT"
       return 1
     }
-    activate
     if [ -f "$WORKSPACE_DIR/requirements.txt" ]; then
       echo "INSTALLING DEPENDENCIES..."
       pip install -r "$WORKSPACE_DIR/requirements.txt" || {
@@ -100,11 +78,7 @@ function active_venv() {
     else
       echo "requirements.txt NOT FOUND AT $WORKSPACE_DIR"
     fi
-    
-    echo "VIRTUAL ENVIRONMENT ACTIVATED"
   fi
-
-  echo "USING PYTHON: $(which python)"
 }
 
 function show_helps() { 
@@ -116,16 +90,10 @@ NOTE: Custom modules are defined in ./env.sh
 
 OPTIONS:
   target modules are definded in env.sh
-  --watch: trigger watchdog, reload target modules on changes.
-  --install: install target modules
-  --update: update target modules
+  --watch:      trigger watchdog, reload target modules on changes.
+  --install:    install target modules
+  --update:     update target modules
   --update-all: update all modules
-
-TEST OPTIONS:
-  --file <path>: Run tests in a specific file (path relative to addons).
-      e.g., --file my_module/tests/test_models.py
-  --tags <tags>: Run tests matching specific tags (comma-separated).
-      e.g., --tags my_tag,-skipped_tag,:TestClass.method
 
 Run install modules 
   ./odoo.sh run --install [--watch]
@@ -133,14 +101,14 @@ Run install modules
 Run update modules
   ./odoo.sh run --update [--watch]
 
-Run update modules
+Run update all target modules (defined in env.sh)
   ./odoo.sh run --update-all [--watch]
 
 Run init fresh module
   ./odoo.sh scaffold <module-name>
 
-Run active venv
-  ./odoo.sh activate-venv
+Run create venv
+  ./odoo.sh create-venv
 
 Remote Debug
   ./odoo.sh debug
@@ -162,8 +130,8 @@ elif [ "$COMMAND" = "debug" ] ; then
   debug
 elif [ "$COMMAND" = "scaffold" ] ; then
   scaffold $@
-elif [ "$COMMAND" = "activate-venv" ] ; then
-  active_venv
+elif [ "$COMMAND" = "create-venv" ] ; then
+  create_venv
 elif [ "$COMMAND" = "help" ] ; then
   show_helps
 else
