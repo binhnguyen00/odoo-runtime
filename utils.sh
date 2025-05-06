@@ -35,3 +35,16 @@ function get_opt() {
   done
   echo $DEFAULT_VALUE
 }
+
+function find_python() {
+  for py in python3.11 python3.10 python3.9 python3.8 python3.7 python3 python; do
+    if command -v "$py" >/dev/null 2>&1; then
+      echo "$py"
+      return 0
+    fi
+  done
+  echo "ERROR: No suitable Python interpreter found" >&2
+  return 1
+}
+
+export PYTHON_CMD=$(find_python)
