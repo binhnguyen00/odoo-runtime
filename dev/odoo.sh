@@ -9,10 +9,12 @@ WORKSPACE DIR : $WORKSPACE_DIR
 ODOO DIR      : $ODOO_DIR
 CONFIG FILE   : $CONFIG_FILE
 PYTHON VENV   : $ODOO_VENV
+PYTHON CMD    : $PYTHON_CMD
 ===================================================
 """
 
 function run() {
+  activate_venv
   local DEV="none"  # Default dev mode
   if has_opt "--watch" "$@"; then
     DEV="all"
@@ -46,18 +48,31 @@ function run() {
 }
 
 function scaffold() {
+  activate_venv
   MODULE_NAME="$@"
   exec $ODOO_DIR/odoo-bin scaffold $MODULE_NAME $WORKSPACE_DIR
 }
 
 function debug() {
+  activate_venv
   python -Xfrozen_modules=off -m debugpy --listen 0.0.0.0:5678 \
     $ODOO_DIR/odoo-bin \
-    --dev=reload \
     -c $CONFIG_FILE \
     -d $DB_NAME \
     -u $INIT_MODULES \
     --dev=all
+}
+
+function activate_venv() {
+  if [ ! -d "$ODOO_VENV" ]; then
+    echo "VIRTUAL ENVIRONMENT NOT FOUND. MUST CREATE ONE"
+    return 1
+  fi
+  if [[ "$OSTYPE" == "msys" || "$OSTYPE" == "cygwin" ]]; then
+    source "$ODOO_VENV/Scripts/activate"
+  else
+    source "$ODOO_VENV/bin/activate"
+  fi
 }
 
 function create_venv() {
@@ -81,6 +96,14 @@ function create_venv() {
   fi
 }
 
+function install_venv() {
+  activate_venv
+  pip install -r "$WORKSPACE_DIR/requirements.txt" || {
+    echo "FAILED TO INSTALL DEPENDENCIES"
+    return 1
+  }
+}
+
 function show_helps() { 
   echo """
 Usage: Run Odoo server with prepaired configs
@@ -95,20 +118,21 @@ OPTIONS:
   --update:     update target modules
   --update-all: update all modules
 
-Run install modules 
+Install modules 
   ./odoo.sh run --install [--watch]
 
-Run update modules
+Update modules
   ./odoo.sh run --update [--watch]
 
-Run update all target modules (defined in env.sh)
+Update all target modules (defined in env.sh)
   ./odoo.sh run --update-all [--watch]
 
-Run init fresh module
+Init fresh module
   ./odoo.sh scaffold <module-name>
 
-Run create venv
-  ./odoo.sh create-venv
+Python Virtual Environment
+  ./odoo.sh venv --create
+  ./odoo.sh venv --install
 
 Remote Debug
   ./odoo.sh debug
@@ -130,8 +154,12 @@ elif [ "$COMMAND" = "debug" ] ; then
   debug
 elif [ "$COMMAND" = "scaffold" ] ; then
   scaffold $@
-elif [ "$COMMAND" = "create-venv" ] ; then
-  create_venv
+elif [ "$COMMAND" = "venv" ] ; then
+  if has_opt "--create" "$@"; then
+    create_venv
+  elif has_opt "--install" "$@"; then
+    install_venv
+  fi
 elif [ "$COMMAND" = "help" ] ; then
   show_helps
 else
