@@ -37,7 +37,7 @@ function get_opt() {
 }
 
 function find_python() {
-  for py in python3.11 python3.10 python3.9 python3.8 python3.7 python3 python; do
+  for py in python3.12 python3.11 python3.10 python3.9 python3.8 python3.7 python3 python; do
     if command -v "$py" >/dev/null 2>&1; then
       echo "$py"
       return 0
