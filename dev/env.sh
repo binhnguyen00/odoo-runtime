@@ -1,6 +1,7 @@
 bin=`cd "$bin"; pwd`
 CURRENT_DIR=`cd $bin; pwd`
 
+ADMIN_DB="postgres"
 ADMIN_USER="postgres"
 ADMIN_PASSWORD="admin"
 
