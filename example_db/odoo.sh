@@ -37,7 +37,7 @@ function run() {
       -d $DB_NAME \
       --update=all \
       --dev=$DEV
-  else 
+  else
     echo """
     Command Error
     Showing help...
@@ -100,11 +100,13 @@ function install_venv() {
   activate_venv
   pip install -r "$WORKSPACE_DIR/requirements.txt" || {
     echo "FAILED TO INSTALL DEPENDENCIES"
-    return 1
+  }
+  pip install -r "$ODOO_DIR/requirements.txt" || {
+    echo "FAILED TO INSTALL DEPENDENCIES"
   }
 }
 
-function show_helps() { 
+function show_helps() {
   echo """
 Usage: Run Odoo server with prepaired configs
   ./odoo.sh [COMMAND] [OPTION]
@@ -118,7 +120,7 @@ OPTIONS:
   --update:     update target modules
   --update-all: update all modules
 
-Install modules 
+Install modules
   ./odoo.sh run --install [--watch]
 
 Update modules
