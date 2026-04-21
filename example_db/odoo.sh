@@ -84,25 +84,26 @@ function create_venv() {
       echo "FAILED TO CREATE VIRTUAL ENVIRONMENT"
       return 1
     }
-    if [ -f "$WORKSPACE_DIR/requirements.txt" ]; then
-      echo "INSTALLING DEPENDENCIES..."
-      pip install -r "$WORKSPACE_DIR/requirements.txt" || {
-        echo "FAILED TO INSTALL DEPENDENCIES"
-        return 1
-      }
-    else
-      echo "requirements.txt NOT FOUND AT $WORKSPACE_DIR"
-    fi
   fi
 }
 
 function install_venv() {
   activate_venv
+
+  pip install --upgrade pip
+
+  pip install setuptools wheel
+
+  echo "INSTALLING WORKSPACE REQUIREMENTS"
   pip install -r "$WORKSPACE_DIR/requirements.txt" || {
     echo "FAILED TO INSTALL DEPENDENCIES"
+    return 1
   }
+
+  echo "INSTALLING ODOO REQUIREMENTS"
   pip install -r "$ODOO_DIR/requirements.txt" || {
     echo "FAILED TO INSTALL DEPENDENCIES"
+    return 1
   }
 }
 
