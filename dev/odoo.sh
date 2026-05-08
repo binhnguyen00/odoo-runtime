@@ -37,7 +37,7 @@ function run() {
       -d $DB_NAME \
       --update=all \
       --dev=$DEV
-  else 
+  else
     echo """
     Command Error
     Showing help...
@@ -51,6 +51,28 @@ function scaffold() {
   activate_venv
   MODULE_NAME="$@"
   exec $ODOO_DIR/odoo-bin scaffold $MODULE_NAME $WORKSPACE_DIR
+}
+
+function shell() {
+  activate_venv
+  exec $ODOO_DIR/odoo-bin shell -c $CONFIG_FILE -d $DB_NAME "$@"
+}
+
+function uninstall() {
+  activate_venv
+  MODULES="$1"
+  if [ -z "$MODULES" ]; then
+    echo "Please provide modules to uninstall, e.g. ./odoo.sh uninstall cors,ems_security"
+    exit 1
+  fi
+  echo "Uninstalling $MODULES..."
+  PYTHON_SCRIPT="
+modules = '$MODULES'.split(',')
+for m in env['ir.module.module'].search([('name', 'in', modules)]):
+    m.button_immediate_uninstall()
+env.cr.commit()
+"
+  echo "$PYTHON_SCRIPT" | $ODOO_DIR/odoo-bin shell -c $CONFIG_FILE -d $DB_NAME
 }
 
 function debug() {
@@ -84,27 +106,32 @@ function create_venv() {
       echo "FAILED TO CREATE VIRTUAL ENVIRONMENT"
       return 1
     }
-    if [ -f "$WORKSPACE_DIR/requirements.txt" ]; then
-      echo "INSTALLING DEPENDENCIES..."
-      pip install -r "$WORKSPACE_DIR/requirements.txt" || {
-        echo "FAILED TO INSTALL DEPENDENCIES"
-        return 1
-      }
-    else
-      echo "requirements.txt NOT FOUND AT $WORKSPACE_DIR"
-    fi
   fi
 }
 
 function install_venv() {
   activate_venv
-  pip install -r "$WORKSPACE_DIR/requirements.txt" || {
-    echo "FAILED TO INSTALL DEPENDENCIES"
-    return 1
-  }
+
+  pip install --upgrade pip
+
+  pip install setuptools wheel
+
+  echo "INSTALLING WORKSPACE REQUIREMENTS"
+  if [ -f "$WORKSPACE_DIR/requirements.txt" ]; then
+    pip install -r "$WORKSPACE_DIR/requirements.txt"
+  else
+    echo "WARNING: requirements.txt not found in $WORKSPACE_DIR"
+  fi
+
+  echo "INSTALLING ODOO REQUIREMENTS"
+  if [ -f "$ODOO_DIR/requirements.txt" ]; then
+    pip install -r "$ODOO_DIR/requirements.txt"
+  else
+    echo "WARNING: requirements.txt not found in $ODOO_DIR"
+  fi
 }
 
-function show_helps() { 
+function show_helps() {
   echo """
 Usage: Run Odoo server with prepaired configs
   ./odoo.sh [COMMAND] [OPTION]
@@ -118,7 +145,7 @@ OPTIONS:
   --update:     update target modules
   --update-all: update all modules
 
-Install modules 
+Install modules
   ./odoo.sh run --install [--watch]
 
 Update modules
@@ -126,6 +153,9 @@ Update modules
 
 Update all target modules (defined in env.sh)
   ./odoo.sh run --update-all [--watch]
+
+Uninstall modules
+  ./odoo.sh uninstall <module-1-name>,<module-2-name>,<module-3-name>
 
 Init fresh module
   ./odoo.sh scaffold <module-name>
@@ -136,6 +166,9 @@ Python Virtual Environment
 
 Remote Debug
   ./odoo.sh debug
+
+Odoo Shell
+  ./odoo.sh shell
   """
 }
 
@@ -154,6 +187,10 @@ elif [ "$COMMAND" = "debug" ] ; then
   debug
 elif [ "$COMMAND" = "scaffold" ] ; then
   scaffold $@
+elif [ "$COMMAND" = "shell" ] ; then
+  shell $@
+elif [ "$COMMAND" = "uninstall" ] ; then
+  uninstall $@
 elif [ "$COMMAND" = "venv" ] ; then
   if has_opt "--create" "$@"; then
     create_venv
