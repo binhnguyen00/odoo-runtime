@@ -19,24 +19,28 @@ function run() {
   if has_opt "--watch" "$@"; then
     DEV="all"
   fi
+  local TEST_ARGS=""
+  if has_opt "--test" "$@"; then
+    TEST_ARGS="--test-enable"
+  fi
   if has_opt "--install" "$@"; then
     exec $ODOO_DIR/odoo-bin \
       -c $CONFIG_FILE \
       -d $DB_NAME \
       -i base,$INIT_MODULES \
-      --dev=$DEV
+      --dev=$DEV $TEST_ARGS
   elif has_opt "--update" "$@"; then
     exec $ODOO_DIR/odoo-bin \
       -c $CONFIG_FILE \
       -d $DB_NAME \
       -u $INIT_MODULES \
-      --dev=$DEV
+      --dev=$DEV $TEST_ARGS
   elif has_opt "--update-all" "$@"; then
     exec $ODOO_DIR/odoo-bin \
       -c $CONFIG_FILE \
       -d $DB_NAME \
       --update=all \
-      --dev=$DEV
+      --dev=$DEV $TEST_ARGS
   else
     echo """
     Command Error
@@ -144,15 +148,16 @@ OPTIONS:
   --install:    install target modules
   --update:     update target modules
   --update-all: update all modules
+  --test:       run tests with --test-enable --stop-after-init
 
 Install modules
-  ./odoo.sh run --install [--watch]
+  ./odoo.sh run --install [--watch] [--test]
 
 Update modules
-  ./odoo.sh run --update [--watch]
+  ./odoo.sh run --update [--watch] [--test]
 
 Update all target modules (defined in env.sh)
-  ./odoo.sh run --update-all [--watch]
+  ./odoo.sh run --update-all [--watch] [--test]
 
 Uninstall modules
   ./odoo.sh uninstall <module-1-name>,<module-2-name>,<module-3-name>
