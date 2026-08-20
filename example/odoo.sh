@@ -1,7 +1,7 @@
 #!/bin/bash
 
 source ./env.sh
-source "$WORKSPACE_DIR/runtime/utils.sh"
+source ./utils.sh
 
 echo """
 ===================================================
@@ -21,7 +21,7 @@ function run() {
   fi
   local TEST_ARGS=""
   if has_opt "--test" "$@"; then
-    TEST_ARGS="--test-enable"
+    TEST_ARGS="--test-enable --stop-after-init"
   fi
   if has_opt "--install" "$@"; then
     exec $ODOO_DIR/odoo-bin \
@@ -49,6 +49,26 @@ function run() {
     show_help
     exit 1
   fi
+}
+
+function test() {
+  activate_venv
+  local MODULE="$1"
+  local TEST_TAGS=""
+  if [ -n "$MODULE" ]; then
+    if [[ "$MODULE" == /* ]]; then
+      TEST_TAGS="--test-tags=$MODULE"
+    else
+      TEST_TAGS="--test-tags=/$MODULE"
+    fi
+  fi
+  exec $ODOO_DIR/odoo-bin \
+    -c $CONFIG_FILE \
+    -d $DB_NAME \
+    -u $INIT_MODULES \
+    --test-enable \
+    $TEST_TAGS \
+    --stop-after-init
 }
 
 function scaffold() {
@@ -148,10 +168,10 @@ OPTIONS:
   --install:    install target modules
   --update:     update target modules
   --update-all: update all modules
-  --test:       run tests with --test-enable --stop-after-init
+  --test [module]: run tests (optional module name e.g. --test shells or --test=shells)
 
-Install modules
-  ./odoo.sh run --install [--watch] [--test]
+Run tests
+  ./odoo.sh test <module-name>
 
 Update modules
   ./odoo.sh run --update [--watch] [--test]
@@ -188,6 +208,8 @@ fi
 
 if [ "$COMMAND" = "run" ] ; then
   run $@
+elif [ "$COMMAND" = "test" ] ; then
+  test $@
 elif [ "$COMMAND" = "debug" ] ; then
   debug
 elif [ "$COMMAND" = "scaffold" ] ; then

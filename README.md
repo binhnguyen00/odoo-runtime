@@ -1,52 +1,46 @@
-# Odoo server runtime
+<h1 style="text-align: center;"> ODOO SERVER RUNTIME </h1>
+
+### Features
+
 - Start odoo server with a single command
 - Support multiple database and virtual environment
 
-# Quickstart
+### Structure
 
-### 1. Configuration
+Each folder in `runtime` is a odoo database itself.
 
-Copy the [example_db](./example_db) to your own database folder
-
-```bash
-cp -r ./example_db ./your_db
-cd ./your_db
+```
+runtime/
+├── dev/
+│   ├── env.sh           # env variables for the shell scripts
+│   ├── odoo.conf        # configs to start odoo server
+│   ├── odoo.sh          # odoo run script
+│   ├── database.sh      # database management script
+│   └── utils.sh
+├── prod/
+└── test/
 ```
 
-Configure your database in [env.sh](./env.sh)
+### Getting started
 
-Configure odoo config file in [odoo.conf](./example_db/odoo.conf)
+#### 1. Create a postgres database and superuser
 
-### 2. Create virtual environment
-
-```bash
-# create virtual environment
-./odoo.sh venv --create
-
-# install dependencies
-./odoo.sh venv --install
-```
-
-### 3. Create postgresql database
-
-```bash
+```shell
 ./database.sh initial
 ```
 
-more details are in [database.sh](./database.sh)
+#### 2. Prepare odoo
 
-### 4. Run odoo server
+- env variables
+  - edit `env.sh`
+  - edit `odoo.conf`
 
-```bash
-# with specific modules pre installed (defined in env.sh)
-./odoo.sh run --install [--watch]
+- virtual env
+  - create: `./odoo.sh venv create` which create a python virtual env in `venv/`
+  - install: `./odoo.sh venv install` which install required python packages for odoo server from `requirements.txt`
 
-# with specific modules pre updated (defined in env.sh)
-./odoo.sh run --update [--watch]
+#### 3. Run Odoo
 
-# update all modules
-./odoo.sh run --update-all [--watch]
-```
-
-Note:
-- `--watch` is optional. It triggers `watchdog` to reload target modules on changes.
+- start for the first time `./odoo.sh run --install`
+- update the modules `./odoo.sh run --update`
+- there are more, check `./odoo.sh run --help`
