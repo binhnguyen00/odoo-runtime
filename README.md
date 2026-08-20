@@ -2,45 +2,56 @@
 
 ### Features
 
-- Start odoo server with a single command
-- Support multiple database and virtual environment
+- Start Odoo server with a single Python command
+- Rich terminal UI visuals (colors, status icons `✔`, `ℹ`, `⚠`, `✖`, environment banners, animated loading spinners)
+- Zero external dependencies (built on Python 3 standard library)
+- Support multiple databases and virtual environments
+- Legacy shell scripts safely backed up in `legacy_sh/`
 
 ### Structure
 
-Each folder in `runtime` is a odoo database itself.
+Recommended project structure
+```
+project/
+├──modules/
+└──runtime/
+```
+
+Each folder in `runtime` corresponds to an Odoo database runtime environment.
 
 ```
 runtime/
 ├── dev/
-│   ├── env.sh           # env variables for the shell scripts
-│   ├── odoo.conf        # configs to start odoo server
-│   ├── odoo.sh          # odoo run script
-│   ├── database.sh      # database management script
-│   └── utils.sh
+│   ├── requirements.txt  # Packages
+│   ├── config.py         # Central configuration (DB, paths, Odoo options)
+│   ├── utils.py          # Terminal visual loggers, spinners & process helpers
+│   ├── database.py       # Database management CLI script
+│   ├── odoo.py           # Odoo server runtime CLI script
+│   ├── odoo.conf         # Odoo server configuration INI file
+│   ├── database.sh       # Forwarder wrapper -> database.py
+│   ├── odoo.sh           # Forwarder wrapper -> odoo.py
+│   └── legacy_sh/        # Backup of original shell scripts (.sh)
 ├── prod/
 └── test/
 ```
 
 ### Getting started
 
-#### 1. Create a postgres database and superuser
+#### 1. Create a Postgres database and superuser
 
 ```shell
-./database.sh initial
+python database.py initial
 ```
 
-#### 2. Prepare odoo
+#### 2. Prepare Odoo configuration & virtualenv
 
-- env variables
-  - edit `env.sh`
-  - edit `odoo.conf`
+- Create odoo.conf: `python odoo.py config --create` (default: `odoo.conf`)
+- Create Virtual environment: `python odoo.py venv --create` (default: `venv`)
+- Install required python packages: `python odoo.py venv --install`
 
-- virtual env
-  - create: `./odoo.sh venv create` which create a python virtual env in `venv/`
-  - install: `./odoo.sh venv install` which install required python packages for odoo server from `requirements.txt`
+#### 3. Run Odoo Server
 
-#### 3. Run Odoo
-
-- start for the first time `./odoo.sh run --install`
-- update the modules `./odoo.sh run --update`
-- there are more, check `./odoo.sh run --help`
+- Start for the first time: `python odoo.py run --install`
+- Update target modules: `python odoo.py run --update`
+- Update with watchdog dev mode: `python odoo.py run --update --watch`
+- For more commands and options: `python odoo.py --help`
