@@ -22,8 +22,8 @@ def get_pip():
   return os.path.join(ODOO_VENV, bin_dir, exe)
 
 
-print(f"""
-===================================================
+def print_env_info():
+  info(f"""===================================================
 PROJECT ROOT  : {PROJECT_ROOT}
 MODULES_DIR   : {PROJECT_MODULES_DIR}
 ODOO DIR      : {ODOO_DIR}
@@ -31,8 +31,7 @@ CONFIG FILE   : {ODOO_CONFIG_FILE}
 PYTHON VENV   : {ODOO_VENV}
 PYTHON        : {get_python()}
 PIP           : {get_pip()}
-===================================================
-""")
+===================================================""")
 
 
 def create_odoo_config(output_path=None):
@@ -227,6 +226,9 @@ def main():
     sys.exit(1)
 
   cmd = sys.argv[1]
+  if cmd in ["run", "test", "scaffold", "shell", "uninstall", "debug", "venv", "config"]:
+    print_env_info()
+
   if cmd == "run":
     run_server()
   elif cmd == "test":

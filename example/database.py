@@ -18,8 +18,8 @@ def pg_env(password=None):
   return env
 
 
-def psql(sql_cmd):
-  execute(f'psql -d "{ADMIN_DB}" -h "{DB_HOST}" -p {DB_PORT} -U "{ADMIN_USER}" -c "{sql_cmd}"', env=pg_env())
+def psql(sql_cmd, quiet=True):
+  execute(f'psql -q -d "{ADMIN_DB}" -h "{DB_HOST}" -p {DB_PORT} -U "{ADMIN_USER}" -c "{sql_cmd}"', env=pg_env(), quiet=quiet)
 
 
 def drop_db():
@@ -51,10 +51,10 @@ def init_admin():
     shell=True, capture_output=True, text=True, env=pg_env()
   )
   if res.stdout.strip() == "1":
-    warning(f"USER {DB_ADMIN} ALREADY EXISTS. SKIPPING CREATION.")
+    warning(f"User '{DB_ADMIN}' already exists. Skipping creation.")
   else:
     psql(f"CREATE USER {DB_ADMIN} WITH PASSWORD '{DB_PASSWORD}'")
-    success(f"User {DB_ADMIN} created.")
+    success(f"User '{DB_ADMIN}' created.")
   grant_permission()
 
 

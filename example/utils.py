@@ -19,22 +19,26 @@ _logger.addHandler(handler)
 _logger.propagate = False
 
 def info(msg):
-  _logger.info(f"{CYAN}{msg}{RESET}")
+  _logger.info(f"{CYAN}ℹ {msg}{RESET}")
 
 def success(msg):
-  _logger.info(f"{GREEN}{msg}{RESET}")
+  _logger.info(f"{GREEN}✔ {msg}{RESET}")
 
 def warning(msg):
-  _logger.warning(f"{YELLOW}{msg}{RESET}")
+  _logger.warning(f"{YELLOW}⚠ {msg}{RESET}")
 
 def error(msg):
-  _logger.error(f"{RED}{msg}{RESET}")
+  _logger.error(f"{RED}✖ {msg}{RESET}")
 
-def execute(cmd, env=None, check=True):
+def execute(cmd, env=None, check=True, quiet=False):
   """Run a shell command."""
+  kwargs = {}
+  if quiet:
+    kwargs["stdout"] = subprocess.DEVNULL
+    kwargs["stderr"] = subprocess.DEVNULL
   if isinstance(cmd, str):
-    return subprocess.run(cmd, shell=True, env=env, check=check)
-  return subprocess.run(cmd, env=env, check=check)
+    return subprocess.run(cmd, shell=True, env=env, check=check, **kwargs)
+  return subprocess.run(cmd, env=env, check=check, **kwargs)
 
 def find_python():
   """Find available python executable."""
