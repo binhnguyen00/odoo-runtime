@@ -100,9 +100,16 @@ def test():
   test_tags = ""
 
   if module:
-    test_tags = f" --test-tags={module if module.startswith('/') else '/' + module}"
+    test_tags = f"--test-tags={module if module.startswith('/') else '/' + module}"
 
-  cmd = f'{venv_py} {ODOO_DIR}/odoo-bin -c {ODOO_CONFIG_FILE} -d {DB_NAME} -u {ODOO_INIT_MODULES} --test-enable{test_tags} --stop-after-init'
+  cmd = f"""
+    {venv_py} {ODOO_DIR}/odoo-bin \
+      -c {ODOO_CONFIG_FILE} \
+      -d {DB_NAME} \
+      -u {ODOO_INIT_MODULES} \
+      --test-enable {test_tags} \
+      --stop-after-init
+  """
   info(f"Running tests for module: {module or 'all'}")
   execute(cmd)
 
@@ -159,7 +166,13 @@ def debug():
   execute(cmd)
 
 
-def venv_cmd():
+def virtualenv():
+  """
+  Managing virtual environment
+  Commands:
+  - `python odoo.py venv --create`    # create virtual environment
+  - `python odoo.py venv --install`   # install requirements
+  """
   py_cmd = find_python()
   if "--create" in sys.argv:
     if os.path.exists(ODOO_VENV):
@@ -227,7 +240,7 @@ def main():
   elif cmd == "debug":
     debug()
   elif cmd == "venv":
-    venv_cmd()
+    virtualenv()
   elif cmd == "config":
     create_odoo_config("odoo.conf")
   elif cmd == "help":
