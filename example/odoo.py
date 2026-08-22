@@ -39,7 +39,7 @@ def create_odoo_config(output_path=None):
     warning("Not creating config file. Use --create to create one.")
     return
 
-  target_file = output_path or "odoo.conf"
+  target_file = output_path or ODOO_CONFIG_FILE
   dir_name = os.path.dirname(os.path.abspath(target_file))
   if dir_name:
     os.makedirs(dir_name, exist_ok=True)
@@ -244,7 +244,7 @@ def main():
   elif cmd == "venv":
     virtualenv()
   elif cmd == "config":
-    create_odoo_config("odoo.conf")
+    create_odoo_config(ODOO_CONFIG_FILE)
   elif cmd == "help":
     show_help()
   else:
