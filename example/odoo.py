@@ -3,8 +3,8 @@ import sys
 import os
 import subprocess
 
-from .env import *
-from .utils import *
+from env import *
+from helpers import *
 
 
 def get_python():

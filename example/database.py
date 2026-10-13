@@ -4,8 +4,8 @@ import os
 import shutil
 import subprocess
 
-from .env import *
-from .utils import *
+from env import *
+from helpers import *
 
 # Check if psql is available
 if not shutil.which("psql"):
