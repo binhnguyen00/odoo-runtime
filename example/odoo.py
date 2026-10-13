@@ -1,11 +1,10 @@
 #!/usr/bin/env python3
-from env import PROJECT_MODULES_DIR
-from env import PROJECT_ROOT
 import sys
 import os
 import subprocess
-from env import *
-from utils import *
+
+from .env import *
+from .utils import *
 
 
 def get_python():
@@ -249,6 +248,7 @@ def main():
     show_help()
   else:
     show_help()
+
 
 if __name__ == "__main__":
   main()
